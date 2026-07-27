@@ -1,0 +1,6 @@
+{
+  "name": "Impostor - Secret Word Game",
+  "description": "Multiplayer party game of deception and mystery. Play with 3+ players, custom categories, dual English and Bulgarian localization, custom timers, hints, voting, and player stats & leaderboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
