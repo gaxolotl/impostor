@@ -1,0 +1,14 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Declare files that will always have CRLF/LF line endings
+*.bat text eol=crlf
+*.sh text eol=lf
+gradlew text eol=lf
+
+# Binary files
+*.jar binary
+*.png binary
+*.so binary
+*.aar binary
+*.klib binary
