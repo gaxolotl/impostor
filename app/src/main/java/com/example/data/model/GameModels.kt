@@ -52,11 +52,28 @@ data class Category(
     }
 }
 
+enum class AppThemeColor(val labelEn: String, val labelBg: String, val primaryHex: Long, val secondaryHex: Long) {
+    VIOLET("Violet", "Виолетов", 0xFF9333EA, 0xFFEC4899),
+    EMERALD("Emerald", "Изумруд", 0xFF10B981, 0xFF06B6D4),
+    SAPPHIRE("Sapphire", "Сапфир", 0xFF2563EB, 0xFF3B82F6),
+    SUNSET("Sunset", "Залез", 0xFFF59E0B, 0xFFEF4444),
+    ROSE("Rose", "Розов", 0xFFE11D48, 0xFFF43F5E),
+    MONOCHROME("Obsidian", "Обсидиан", 0xFF475569, 0xFF64748B)
+}
+
+enum class ThemeMode(val labelEn: String, val labelBg: String) {
+    DARK("Dark", "Тъмна"),
+    LIGHT("Light", "Светла"),
+    SYSTEM("System", "Система")
+}
+
 data class GameSettings(
     val impostorCount: Int = 1,
     val timeLimitSeconds: Int = 60, // 0 = unlimited
     val showHintToImpostor: Boolean = true,
-    val selectedCategoryIds: Set<String> = setOf("brands", "foods", "animals")
+    val selectedCategoryIds: Set<String> = setOf("brands", "foods", "animals"),
+    val themeColor: AppThemeColor = AppThemeColor.VIOLET,
+    val themeMode: ThemeMode = ThemeMode.DARK
 )
 
 enum class GamePhase {

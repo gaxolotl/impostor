@@ -32,11 +32,14 @@ import com.example.ui.theme.GlassBorder
 import com.example.ui.theme.PrimaryNeonViolet
 import com.example.ui.theme.SurfaceGlass
 
+import androidx.compose.material.icons.filled.Palette
+
 @Composable
 fun GameHeader(
     title: String,
     language: Language,
     onToggleLanguage: (Language) -> Unit,
+    onOpenSettings: (() -> Unit)? = null,
     onBack: (() -> Unit)? = null
 ) {
     Row(
@@ -57,7 +60,7 @@ fun GameHeader(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color.White
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -67,44 +70,67 @@ fun GameHeader(
                 text = title,
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     letterSpacing = 0.5.sp
                 )
             )
         }
 
-        // Language Switcher Toggle Pill (Frosted Glass Border)
         Row(
-            modifier = Modifier
-                .clip(CircleShape)
-                .background(SurfaceGlass)
-                .border(1.dp, GlassBorder, CircleShape)
-                .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Language.entries.forEach { lang ->
-                val isSelected = lang == language
-                Box(
+            if (onOpenSettings != null) {
+                IconButton(
+                    onClick = onOpenSettings,
                     modifier = Modifier
+                        .size(38.dp)
                         .clip(CircleShape)
-                        .background(if (isSelected) PrimaryNeonViolet else Color.Transparent)
-                        .clickable { onToggleLanguage(lang) }
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                        .testTag("lang_toggle_${lang.code}"),
-                    contentAlignment = Alignment.Center
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .testTag("open_theme_settings_button")
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                    Icon(
+                        imageVector = Icons.Default.Palette,
+                        contentDescription = "Theme Settings",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+
+            // Language Switcher Toggle Pill (Material 3 Surface Variant)
+            Row(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                    .padding(3.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Language.entries.forEach { lang ->
+                    val isSelected = lang == language
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                            .clickable { onToggleLanguage(lang) }
+                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                            .testTag("lang_toggle_${lang.code}"),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(text = lang.flagEmoji, fontSize = 14.sp)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = lang.code.uppercase(),
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal,
-                                color = if (isSelected) Color.White else Color.White.copy(alpha = 0.6f)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = lang.flagEmoji, fontSize = 13.sp)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = lang.code.uppercase(),
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }

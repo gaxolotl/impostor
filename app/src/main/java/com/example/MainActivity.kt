@@ -6,13 +6,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.data.model.GamePhase
+import com.example.ui.components.ThemeSettingsDialog
 import com.example.ui.screens.CategoriesScreen
 import com.example.ui.screens.DiscussionScreen
 import com.example.ui.screens.HomeScreen
@@ -21,7 +26,6 @@ import com.example.ui.screens.ResultScreen
 import com.example.ui.screens.RevealScreen
 import com.example.ui.screens.SetupScreen
 import com.example.ui.screens.VotingScreen
-import com.example.ui.theme.DarkBackground
 import com.example.ui.theme.ImpostorTheme
 import com.example.ui.viewmodel.GameViewModel
 
@@ -30,9 +34,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ImpostorTheme {
-                ImpostorApp()
-            }
+            ImpostorApp()
         }
     }
 }
@@ -52,95 +54,115 @@ fun ImpostorApp(viewModel: GameViewModel = viewModel()) {
     val customCategories by viewModel.customCategories.collectAsStateWithLifecycle()
     val playerStatsList by viewModel.playerStatsList.collectAsStateWithLifecycle()
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        containerColor = DarkBackground
-    ) { innerPadding ->
-        Modifier.padding(innerPadding)
-        when (phase) {
-            GamePhase.HOME -> {
-                HomeScreen(
-                    language = language,
-                    onToggleLanguage = { viewModel.setLanguage(it) },
-                    onNavigate = { viewModel.setPhase(it) }
-                )
-            }
-            GamePhase.SETUP -> {
-                SetupScreen(
-                    language = language,
-                    players = players,
-                    settings = settings,
-                    customCategories = customCategories,
-                    onToggleLanguage = { viewModel.setLanguage(it) },
-                    onAddPlayer = { viewModel.addPlayer(it) },
-                    onRemovePlayer = { viewModel.removePlayer(it) },
-                    onUpdatePlayerName = { idx, name -> viewModel.updatePlayerName(idx, name) },
-                    onUpdateSettings = { viewModel.updateSettings(it) },
-                    onStartGame = { viewModel.startNewRound() },
-                    onBack = { viewModel.setPhase(GamePhase.HOME) }
-                )
-            }
-            GamePhase.REVEAL -> {
-                RevealScreen(
-                    language = language,
-                    players = players,
-                    currentIndex = currentRevealIndex,
-                    settings = settings,
-                    categoryName = categoryName,
-                    onToggleLanguage = { viewModel.setLanguage(it) },
-                    onConfirmSeen = { viewModel.markCurrentPlayerSeen() }
-                )
-            }
-            GamePhase.DISCUSSION -> {
-                DiscussionScreen(
-                    language = language,
-                    categoryName = categoryName,
-                    secondsLeft = timerSecondsLeft,
-                    isTimerRunning = isTimerRunning,
-                    hasTimer = settings.timeLimitSeconds > 0,
-                    onToggleLanguage = { viewModel.setLanguage(it) },
-                    onTogglePause = { viewModel.toggleTimerPause() },
-                    onVoteNow = { viewModel.setPhase(GamePhase.VOTING) }
-                )
-            }
-            GamePhase.VOTING -> {
-                VotingScreen(
-                    language = language,
-                    players = players,
-                    votes = votes,
-                    onToggleLanguage = { viewModel.setLanguage(it) },
-                    onCastVote = { voterId, suspectId -> viewModel.recordVote(voterId, suspectId) },
-                    onSubmitVotes = { viewModel.finishVotingAndReveal() }
-                )
-            }
-            GamePhase.RESULT -> {
-                ResultScreen(
-                    language = language,
-                    result = roundResult,
-                    players = players,
-                    onToggleLanguage = { viewModel.setLanguage(it) },
-                    onPlayNextRound = { viewModel.startNewRound() },
-                    onMainMenu = { viewModel.setPhase(GamePhase.HOME) }
-                )
-            }
-            GamePhase.CATEGORIES -> {
-                CategoriesScreen(
-                    language = language,
-                    customCategories = customCategories,
-                    onToggleLanguage = { viewModel.setLanguage(it) },
-                    onAddCustomCategory = { title, words -> viewModel.addCustomCategory(title, words) },
-                    onDeleteCustomCategory = { dbId -> viewModel.deleteCustomCategory(dbId) },
-                    onBack = { viewModel.setPhase(GamePhase.HOME) }
-                )
-            }
-            GamePhase.LEADERBOARD -> {
-                LeaderboardScreen(
-                    language = language,
-                    statsList = playerStatsList,
-                    onToggleLanguage = { viewModel.setLanguage(it) },
-                    onBack = { viewModel.setPhase(GamePhase.HOME) }
-                )
+    var showThemeDialog by remember { mutableStateOf(false) }
+
+    ImpostorTheme(
+        appThemeColor = settings.themeColor,
+        themeMode = settings.themeMode
+    ) {
+        if (showThemeDialog) {
+            ThemeSettingsDialog(
+                language = language,
+                currentThemeColor = settings.themeColor,
+                currentThemeMode = settings.themeMode,
+                onSelectThemeColor = { viewModel.updateThemeColor(it) },
+                onSelectThemeMode = { viewModel.updateThemeMode(it) },
+                onDismiss = { showThemeDialog = false }
+            )
+        }
+
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = MaterialTheme.colorScheme.background
+        ) { innerPadding ->
+            Modifier.padding(innerPadding)
+            when (phase) {
+                GamePhase.HOME -> {
+                    HomeScreen(
+                        language = language,
+                        onToggleLanguage = { viewModel.setLanguage(it) },
+                        onOpenThemeSettings = { showThemeDialog = true },
+                        onNavigate = { viewModel.setPhase(it) }
+                    )
+                }
+                GamePhase.SETUP -> {
+                    SetupScreen(
+                        language = language,
+                        players = players,
+                        settings = settings,
+                        customCategories = customCategories,
+                        onToggleLanguage = { viewModel.setLanguage(it) },
+                        onAddPlayer = { viewModel.addPlayer(it) },
+                        onRemovePlayer = { viewModel.removePlayer(it) },
+                        onUpdatePlayerName = { idx, name -> viewModel.updatePlayerName(idx, name) },
+                        onUpdateSettings = { viewModel.updateSettings(it) },
+                        onStartGame = { viewModel.startNewRound() },
+                        onBack = { viewModel.setPhase(GamePhase.HOME) }
+                    )
+                }
+                GamePhase.REVEAL -> {
+                    RevealScreen(
+                        language = language,
+                        players = players,
+                        currentIndex = currentRevealIndex,
+                        settings = settings,
+                        categoryName = categoryName,
+                        onToggleLanguage = { viewModel.setLanguage(it) },
+                        onConfirmSeen = { viewModel.markCurrentPlayerSeen() }
+                    )
+                }
+                GamePhase.DISCUSSION -> {
+                    DiscussionScreen(
+                        language = language,
+                        categoryName = categoryName,
+                        secondsLeft = timerSecondsLeft,
+                        isTimerRunning = isTimerRunning,
+                        hasTimer = settings.timeLimitSeconds > 0,
+                        onToggleLanguage = { viewModel.setLanguage(it) },
+                        onTogglePause = { viewModel.toggleTimerPause() },
+                        onVoteNow = { viewModel.setPhase(GamePhase.VOTING) }
+                    )
+                }
+                GamePhase.VOTING -> {
+                    VotingScreen(
+                        language = language,
+                        players = players,
+                        votes = votes,
+                        onToggleLanguage = { viewModel.setLanguage(it) },
+                        onCastVote = { voterId, suspectId -> viewModel.recordVote(voterId, suspectId) },
+                        onSubmitVotes = { viewModel.finishVotingAndReveal() }
+                    )
+                }
+                GamePhase.RESULT -> {
+                    ResultScreen(
+                        language = language,
+                        result = roundResult,
+                        players = players,
+                        onToggleLanguage = { viewModel.setLanguage(it) },
+                        onPlayNextRound = { viewModel.startNewRound() },
+                        onMainMenu = { viewModel.setPhase(GamePhase.HOME) }
+                    )
+                }
+                GamePhase.CATEGORIES -> {
+                    CategoriesScreen(
+                        language = language,
+                        customCategories = customCategories,
+                        onToggleLanguage = { viewModel.setLanguage(it) },
+                        onAddCustomCategory = { title, words -> viewModel.addCustomCategory(title, words) },
+                        onDeleteCustomCategory = { dbId -> viewModel.deleteCustomCategory(dbId) },
+                        onBack = { viewModel.setPhase(GamePhase.HOME) }
+                    )
+                }
+                GamePhase.LEADERBOARD -> {
+                    LeaderboardScreen(
+                        language = language,
+                        statsList = playerStatsList,
+                        onToggleLanguage = { viewModel.setLanguage(it) },
+                        onBack = { viewModel.setPhase(GamePhase.HOME) }
+                    )
+                }
             }
         }
     }
 }
+

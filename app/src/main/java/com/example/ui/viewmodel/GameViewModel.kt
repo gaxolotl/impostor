@@ -107,6 +107,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _gameSettings.value = settings.copy(impostorCount = count)
     }
 
+    fun updateThemeColor(color: com.example.data.model.AppThemeColor) {
+        _gameSettings.value = _gameSettings.value.copy(themeColor = color)
+    }
+
+    fun updateThemeMode(mode: com.example.data.model.ThemeMode) {
+        _gameSettings.value = _gameSettings.value.copy(themeMode = mode)
+    }
+
     fun addPlayer(name: String) {
         val trimmed = name.trim()
         if (trimmed.isEmpty()) return
